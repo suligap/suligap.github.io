@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <title>suligap.net</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" type="text/css" href="/theme/css/style.css" />
+
+
+
+
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">suligap.net <strong></strong></a></h1>
+        </header><!-- /#banner -->
+        <nav id="menu"><ul>
+
+            <li><a href="/">ARTICLES</a></li>
+            <li><a href="/about/">ABOUT</a></li>
+        </ul></nav><!-- /#menu -->
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="/web-api-documentation-with-openapi/" rel="bookmark"
+         title="Permalink to Web API Documentation with OpenAPI">Web <span class="caps">API</span> Documentation with&nbsp;OpenAPI</a></h2>
+ 
+  </header>
+  <footer class="post-info">
+    <abbr class="published" title="2016-07-23T10:20:00+01:00">
+      Sat 23 July 2016
+    </abbr>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <p>Documentation is great. Creating good docs and keeping them up to date is hard and very&nbsp;important.</p>
+<p>Even if your APIs are for &#8220;internal&#8221; consumption only - it still pays off to document them properly, because one day the <span class="caps">API</span> authors are the only clients of that <span class="caps">API</span>, but one week later three different teams are using it. The <span class="caps">API</span> has grown, but you&#8217;re still good, because this is why you&#8217;ve created two separate apps - backend and frontend in the first place. two weeks later your original service becomes a client of two new services that have joined your system, both maintained by different people. And it&#8217;s great because there are awesome docs available for them, you can iterate faster and everyone is happy. Three weeks later you&#8217;re releasing a new version of the original <span class="caps">API</span> and it&#8217;s all good because you have both old and new versions&nbsp;documented!</p>
+<p>This sounds like development utopia. Maintaining a system like that is not easy. Keeping it up while rolling out new features and re-architecting parts of it is hard enough <em>with</em> accurate docs being available. Fortunately, there are &#8220;only&#8221; so many ways in which an <span class="caps">HTTP</span> based <span class="caps">API</span> can behave and there are tools available to encode this rules using agreed upon formats. One of them is the <a href="https://openapis.org/specification">OpenAPI</a> Specification, based on version 2.0 of <a href="http://swagger.io/">Swagger</a>.</p>
+<p>This post aims to very briefly introduce the specification, just enough to interest you in checking it out and gives a quick overview of available tooling around it that can be used to create specification files and produce&nbsp;documentation.</p>
+<h2>Quick Introduction to the&nbsp;Specification</h2>
+<p>So let&#8217;s say your <span class="caps">API</span> has one endpoint <code>https://example.com/keyboard/</code>. It can be used to create new keyboards by sending it a <code>POST</code> request with <code>application/json</code> body and a <a href="https://tools.ietf.org/html/rfc7519"><span class="caps">JWT</span></a> authorization header. An example successful request and response could look like&nbsp;this:</p>
+<p>Request:</p>
+<div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/keyboard/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">example.com</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+<span class="na">Content-Length</span><span class="o">:</span> <span class="l">88</span>
+<span class="na">Authorization</span><span class="o">:</span> <span class="l">JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleGFtcGxlIjoxfQ.Q9HCpsH4T6GkbOXmjJLvYlBxkGxg8r08aBjlBqtHMH4</span>
+
+<span class="p">{</span>
+    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello kbd&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;keys&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="s2">&quot;Bye&quot;</span><span class="p">],</span>
+    <span class="nt">&quot;backlight&quot;</span><span class="p">:</span> <span class="kc">false</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Response:</p>
+<div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">201</span> <span class="ne">CREATED</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+<span class="na">Content-Length</span><span class="o">:</span> <span class="l">134</span>
+
+<span class="p">{</span>
+    <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;3d19109322a146dbb79519753ccd7dae&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello kbd&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;keys&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="s2">&quot;Bye&quot;</span><span class="p">],</span>
+    <span class="nt">&quot;backlight&quot;</span><span class="p">:</span> <span class="kc">false</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>This endpoint can also respond with <code>HTTP 400</code>, when the input is of invalid format and with <code>HTTP 401</code> when authorization fails. Using Swagger specification we can encode all of this in a <a href="http://yaml.org/"><span class="caps">YAML</span></a>&nbsp;file:</p>
+<div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">swagger</span><span class="p p-Indicator">:</span> <span class="s">&#39;2.0&#39;</span>
+<span class="l l-Scalar l-Scalar-Plain">info</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">version</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1.2.3</span>
+  <span class="l l-Scalar l-Scalar-Plain">title</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Keyboards API</span>
+  <span class="l l-Scalar l-Scalar-Plain">description</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Creates beautiful keyboards</span>
+<span class="l l-Scalar l-Scalar-Plain">schemes</span><span class="p p-Indicator">:</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">https</span>
+<span class="l l-Scalar l-Scalar-Plain">security</span><span class="p p-Indicator">:</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">JWTAuthToken</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">[]</span>
+<span class="l l-Scalar l-Scalar-Plain">consumes</span><span class="p p-Indicator">:</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">application/json</span>
+<span class="l l-Scalar l-Scalar-Plain">produces</span><span class="p p-Indicator">:</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">application/json</span>
+<span class="l l-Scalar l-Scalar-Plain">paths</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">/keyboard/</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">post</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">description</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Creates a new keyboard</span>
+      <span class="l l-Scalar l-Scalar-Plain">operationId</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">keyboard.create</span>
+      <span class="l l-Scalar l-Scalar-Plain">parameters</span><span class="p p-Indicator">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">KeyboardInputData</span>
+          <span class="l l-Scalar l-Scalar-Plain">in</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">body</span>
+          <span class="l l-Scalar l-Scalar-Plain">required</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+          <span class="l l-Scalar l-Scalar-Plain">schema</span><span class="p p-Indicator">:</span>
+            <span class="l l-Scalar l-Scalar-Plain">$ref</span><span class="p p-Indicator">:</span> <span class="s">&#39;#/definitions/NewKeyboardInputData&#39;</span>
+      <span class="l l-Scalar l-Scalar-Plain">responses</span><span class="p p-Indicator">:</span>
+        <span class="s">&#39;201&#39;</span><span class="p p-Indicator">:</span>
+          <span class="l l-Scalar l-Scalar-Plain">description</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Details of the newly created keyboard</span>
+          <span class="l l-Scalar l-Scalar-Plain">schema</span><span class="p p-Indicator">:</span>
+            <span class="l l-Scalar l-Scalar-Plain">$ref</span><span class="p p-Indicator">:</span> <span class="s">&#39;#/definitions/KeyboardData&#39;</span>
+        <span class="s">&#39;400&#39;</span><span class="p p-Indicator">:</span>
+          <span class="l l-Scalar l-Scalar-Plain">description</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Invalid input error</span>
+          <span class="l l-Scalar l-Scalar-Plain">schema</span><span class="p p-Indicator">:</span>
+            <span class="l l-Scalar l-Scalar-Plain">$ref</span><span class="p p-Indicator">:</span> <span class="s">&#39;#/definitions/InvalidInputError&#39;</span>
+        <span class="s">&#39;401&#39;</span><span class="p p-Indicator">:</span>
+          <span class="l l-Scalar l-Scalar-Plain">description</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Unauthorized</span>
+
+<span class="l l-Scalar l-Scalar-Plain">securityDefinitions</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">JWTAuthToken</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">apiKey</span>
+    <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Authorization</span>
+    <span class="l l-Scalar l-Scalar-Plain">in</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">header</span>
+    <span class="l l-Scalar l-Scalar-Plain">description</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">|</span>
+      <span class="no">All endpoints expect a JWT `Authorization` header the format of</span>
+      <span class="no">the header value is `JWT &lt;token&gt;`.</span>
+
+      <span class="no">Example:</span>
+
+          <span class="no">Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleGFtcGxlIjoxfQ.Q9HCpsH4T6GkbOXmjJLvYlBxkGxg8r08aBjlBqtHMH4</span>
+
+<span class="l l-Scalar l-Scalar-Plain">definitions</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">KeyboardData</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">object</span>
+    <span class="l l-Scalar l-Scalar-Plain">required</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">id</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">keys</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">backlight</span>
+    <span class="l l-Scalar l-Scalar-Plain">properties</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">id</span><span class="p p-Indicator">:</span>
+        <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+        <span class="l l-Scalar l-Scalar-Plain">pattern</span><span class="p p-Indicator">:</span> <span class="s">&#39;^[a-f0-9]{32}$&#39;</span>
+      <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span>
+        <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+      <span class="l l-Scalar l-Scalar-Plain">keys</span><span class="p p-Indicator">:</span>
+        <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">array</span>
+        <span class="l l-Scalar l-Scalar-Plain">items</span><span class="p p-Indicator">:</span>
+          <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+        <span class="l l-Scalar l-Scalar-Plain">uniqueItems</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+      <span class="l l-Scalar l-Scalar-Plain">backlight</span><span class="p p-Indicator">:</span>
+        <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">boolean</span>
+  <span class="l l-Scalar l-Scalar-Plain">NewKeyboardInputData</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">object</span>
+    <span class="l l-Scalar l-Scalar-Plain">required</span><span class="p p-Indicator">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">keys</span>
+    <span class="l l-Scalar l-Scalar-Plain">properties</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span>
+        <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+      <span class="l l-Scalar l-Scalar-Plain">keys</span><span class="p p-Indicator">:</span>
+        <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">array</span>
+        <span class="l l-Scalar l-Scalar-Plain">items</span><span class="p p-Indicator">:</span>
+          <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+        <span class="l l-Scalar l-Scalar-Plain">uniqueItems</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+      <span class="l l-Scalar l-Scalar-Plain">backlight</span><span class="p p-Indicator">:</span>
+        <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">boolean</span>
+  <span class="l l-Scalar l-Scalar-Plain">InvalidInputError</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">object</span>
+    <span class="l l-Scalar l-Scalar-Plain">properties</span><span class="p p-Indicator">:</span>
+      <span class="l l-Scalar l-Scalar-Plain">code</span><span class="p p-Indicator">:</span>
+        <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+</pre></div>
+
+
+<p>Some of the the concepts should be self explanatory, but everything is well documented in the <a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md">specification</a>. We managed to&nbsp;specify:</p>
+<ul>
+<li>authorization&nbsp;scheme</li>
+<li>content types accepted and returned by the <span class="caps">API</span></li>
+<li>possible response&nbsp;types</li>
+<li>formats of the input and responses for our endpoint - OpenAPI spec uses a subset of <a href="http://json-schema.org/"><span class="caps">JSON</span> Schema</a> allowing us to specify data&nbsp;types</li>
+</ul>
+<h2>Tools</h2>
+<p><a href="https://github.com/swagger-api/swagger-editor">Swagger Editor</a> is very useful for creating the spec. One of the best features is that it renders a very nice looking <span class="caps">HTML</span> preview of the documentation right next to the spec as you type. There&#8217;s an official <a href="https://hub.docker.com/r/swaggerapi/swagger-editor/">docker image</a> available to run the editor locally. Unfortunately, at the time of writing this, Swagger Editor does not support exporting of the <span class="caps">HTML</span> preview as something that can be used as standalone documentation (see this <a href="https://github.com/swagger-api/swagger-editor/issues/664">issue</a> for&nbsp;details).</p>
+<p>The official documentation rendering tool - <a href="https://github.com/swagger-api/swagger-ui">Swagger <span class="caps">UI</span></a> unfortunately by default won&#8217;t produce as nice looking documentation as the preview in Swagger Editor. However it can be&nbsp;customized.</p>
+<p><a href="https://github.com/swagger-api/swagger-codegen">Swagger Codegen</a> is a tool for generating <span class="caps">API</span> clients/servers based on a spec and it can generate <code>html</code> and <code>dynamic-html</code> <span class="dquo">&#8220;</span>clients&#8221; (basically <span class="caps">API</span> docs) but they are not as well organized and good looking as what Swagger <span class="caps">UI</span> can&nbsp;produce.</p>
+<p>Both Swagger <span class="caps">UI</span> and Swagger Editor docs don&#8217;t seem to offer an &#8220;export&#8221; option that would just create static files that we can be easily hosted. Swagger <span class="caps">UI</span> is a <a href="https://nodejs.org">Node.js</a> application - via browser a user points it at a spec file and it validates and renders docs&nbsp;dynamically.</p>
+<p>Both Swagger <span class="caps">UI</span> and Swagger Editor generated docs offer a way of interacting with the <span class="caps">API</span> by providing forms that can be used to make requests against the live <span class="caps">API</span>.</p>
+<p>If you&#8217;re looking for easily hostable docs, <a href="https://github.com/bootprint/bootprint-openapi">bootpring-openapi</a> may be interesting (It&#8217;s mentioned in the Swagger Editor <a href="https://github.com/swagger-api/swagger-editor/issues/664">issue</a>). This tool can be used to generate clear looking <span class="caps">API</span> docs as one <span class="caps">HTML</span> file (with <span class="caps">CSS</span>&nbsp;inlined).</p>
+<h2>Summary</h2>
+<p><span class="caps">API</span> Docs are important, especially in multi service and multi team environments. <a href="https://openapis.org">OpenAPI Specification</a> is a powerful tool for describing web APIs. There are others which I won&#8217;t cover here (one of them is <a href="http://raml.org"><span class="caps">RAML</span></a>). I&#8217;ve found OpenAPI spec useful and comprehensive enough for my needs. There are many handy tools for working with it, although it would be great if the default docs generated by Swagger <span class="caps">UI</span> were more like the ones previewed in Swagger Editor. If you think there&#8217;s anything I&#8217;ve missed or you have interesting experiences to share in the <span class="caps">API</span> spec area, please get in&nbsp;touch!</p>
+  </div><!-- /.entry-content -->
+</section>
+        <footer id="contentinfo" class="body">
+          <ul>
+            <li><a href="/articles/">Articles</a></li>
+            <li><a href="/about/">About</a></li>
+          </ul>
+          <p>©2016 Przemysław Suliga</p>
+          <address id="about" class="vcard body">
+            Powered by <a href="http://getpelican.com/">Pelican</a>.
+          </address><!-- /#about -->
+        </footer><!-- /#contentinfo -->
+</body>
+</html>

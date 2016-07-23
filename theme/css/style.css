@@ -1,0 +1,88 @@
+@import url("pygment.css");
+
+body{
+    max-width: 666px;
+    margin: 0px auto;
+    line-height: 1.5;
+    font-size: 18px;
+    font-family: 'Trebuchet MS', Trebuchet, 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color: #444;
+    background-color: #ffffff;
+    padding:0 10px;
+}
+h1,h2,h3 {
+    line-height:1.2;
+}
+pre {
+    padding: 16px;
+    font-size: 67%;
+    line-height: 1.25;
+    overflow: auto;
+    background-color: #f2f2f2;
+    border-radius: 3px;
+}
+a {outline: 0;}
+a img {border: 0px; text-decoration: none;}
+a:link, a:visited {
+    color: #444;
+	  padding: 0 1px;
+	  text-decoration: underline;
+}
+a:hover, a:active {
+    color: #7d7d7d;
+	  text-decoration: underline !important;
+}
+h2.entry-title a {
+    text-decoration: none;
+}
+h1 a {
+    text-decoration: none !important;
+}
+h1 {
+    text-align: center;
+}
+
+#content {
+    padding: 0px 3px;
+}
+#menu {
+    padding: 0px 0px 20px 0px;
+    //background-color: #444;
+    margin: 0px 0px 40px 0px;
+}
+#menu ul {
+    padding: 0;
+    text-align: center;
+}
+#menu ul li {
+    list-style: none;
+    display: inline-block;
+    padding: 0.5em 1em 0.5em 1em
+}
+#menu ul li a:link, #menu ul li a:visited {
+    //color: #f2f2f2;
+}
+#menu ul li a:hover, #menu ul li a:active {
+    color: #7d7d7d;
+}
+#contentinfo {
+    font-size: 65%;
+    text-align: center;
+    padding: 10px 0px;
+    margin: 50px 0px;
+    color: #f2f2f2;
+    background-color: #444;
+}
+#contentinfo a {
+    color: #f2f2f2;
+}
+#contentinfo ul {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+}
+#contentinfo ul li {
+    list-style: none;
+    display: inline-block;
+    padding: 0em 1em 0em 1em;
+}
